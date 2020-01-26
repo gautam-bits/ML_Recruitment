@@ -74,13 +74,15 @@ def activation(z, derivative=False):
     pontwize activation on each element of the input z
     """
     if derivative:
-        pass
+        
         # TODO
         # return the derivative of the sigmoid activation function
+        return -np.exp(- z )/((1+ np.exp(- z ))**2)
     else:
-        pass
+        
         # TODO
         # return the normal sigmoid activation function
+        return 1/(1+ np.exp(- z ))
 
 def cost_function(y_true, y_pred):
     """
@@ -111,6 +113,9 @@ def cost_function_prime(y_true, y_pred):
     """
     # TODO
     # Calculate the derivative of the cost function
+    
+    cost_prime = y_pred - y_true
+    
     return cost_prime
 
 class NeuralNetwork(object):
@@ -148,6 +153,7 @@ class NeuralNetwork(object):
 
         # TODO
         # initialize the weights randomly
+        
         """
         Be careful with the dimensions of the weights
         The dimensions of the weight of any particular layer will depend on the
@@ -159,7 +165,7 @@ class NeuralNetwork(object):
         (2,4) for weights connecting layers 3 (4) and 4(2)
         Each matrix will be initialized with random values
         """
-        # self.weights =
+        self.weights =[np.random.randn(self.size[i], self.size[i-1])*(1 / np.sqrt(self.size[i-1])) for i in range(1, len(self.size))]
 
     def forward(self, input):
         '''
@@ -183,6 +189,7 @@ class NeuralNetwork(object):
         activations = [a]
         # TODO
         # what does the zip function do?
+        # the zip makes a tuple of all the iterators passed to it by making the i th index element the combition of ith elements of various iterators.
         for w, b in zip(self.weights, self.biases):
             z = np.dot(w, a) + b
             a  = activation(z)
@@ -222,7 +229,10 @@ class NeuralNetwork(object):
         #TODO
         # Recursively calculate delta for each layer from the previous layer
         for l in range(len(deltas) - 2, -1, -1):
-            pass
+            delta = np.dot(self.weights[l + 1].transpose(), deltas[l + 1]) * activation(pre_activations[l], derivative=True) 
+            deltas[l] = delta
+            
+         
             # deltas of layer l depend on the weights of layer l and l+1 and on the sigmoid derivative of the pre-activations of layer l
             # Note that we use a dot product when multipying the weights and the deltas
             # Check their shapes to ensure that their shapes conform to the requiremnts (You may need to transpose some of the matrices)
@@ -255,8 +265,8 @@ class NeuralNetwork(object):
             # dW_temp depends on the activations of layer l-1 and the deltas of layer l
             # dB_temp depends only on the deltas of layer l
             # Again be careful of the dimensions and ensure that the dW matrix has the same shape as W
-            # dW =
-            # dB =
+            dW_temp = np.dot(deltas[l], activations[l-1].transpose())
+            dB_temp = deltas[l]
             dW.append(dW_temp)
             db.append(np.expand_dims(db_temp.mean(axis=1), 1))
         return dW, db
@@ -368,13 +378,13 @@ class NeuralNetwork(object):
             # TODO
             # What does the enumerate function do?
             for i, (dw_epoch, db_epoch) in enumerate(zip(dw_per_epoch, db_per_epoch)):
-                pass
+                
                 # TODO
                 # Update the weights using the backpropagation algorithm implemented earlier
                 # W = W - learning_rate * derivatives (dW)
                 # b = b - learning_rate * derivatives (db)
-                # self.weights =
-                # self.biases =
+                self.weights[i] = self.weights[i] - learning_rate * dw_epoch
+                self.biases[i] = self.biases[i] = self.biases[i] - learning_rate * db_epoch
 
             history_train_losses.append(np.mean(train_losses))
             history_train_accuracies.append(np.mean(train_accuracies))
